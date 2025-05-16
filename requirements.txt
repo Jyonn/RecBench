@@ -13,7 +13,7 @@ google-generativeai  # for gemini service
 einop  # for phi model
 pytest  # for phi model
 tiktoken  # for glm model
-flash-attn  # for phi model
+# flash-attn  # for phi model
 sentencepiece
 peft
 scikit-learn
@@ -22,3 +22,4 @@ unitok
 sentence_transformers  # for e5 model
 prettytable
 polars~=1.4.1
+pyarrow
