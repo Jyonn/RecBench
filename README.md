@@ -1,6 +1,6 @@
 # RecBench
 
-*A benchmarking platform for large foundation models to evaluate their recommendation abilities (Recabilities).*
+> Can LLMs Outshine Conventional Recommenders? A Comparative Evaluation
 
 ## Installation
 
@@ -30,15 +30,36 @@ RecBench supports 15 datasets across domains like news, books, movies, music, fa
 - 🏨 HotelRec: Hotel recommendation dataset.
 - ️️🍽️ Yelp: Restaurant reviews and metadata.
 
-These datasets are also become the standard benchmark datasets for the [Legommenders](https://github.com/Jyonn/Legommenders) library
-You can access the preprocessed data [here](https://drive.google.com/drive/folders/1SocYpOWOxIWm7eB-CpFmyUR3Pb_-Pt9m?usp=sharing).
+You can download our preprocessed data from [Kaggle (Recommended)](https://www.kaggle.com/datasets/qijiong/recbench/), [Google Drive](https://drive.google.com/drive/folders/1SocYpOWOxIWm7eB-CpFmyUR3Pb_-Pt9m?usp=sharing), and [Github Release](https://github.com/Jyonn/RecBench/releases/tag/dataset).
 
-## A Quick Use
+## Usage
 
-### Zero-shot Recability for Llama-1-7B model
+### Example 1: Zero-shot, Pair-wise
 
 ```shell
 python worker.py --model llama1 --data mind
+```
+
+### Example 2: Fine-tune, Pair-wise
+
+```shell
+python tuner.py --model llama1 --train mind --valid mind
+```
+
+### Example 3: Fine-tune, List-wise, Unique-ID-based
+
+```shell
+python seq_processor.py --data mind  # preprocess SeqRec data
+python id_coder.py --data mind --seq true  # use unique identifier to represent items
+python seq_tuner.py --model llama1seq --data mind --code_path ./code/mind.id.seq.code
+```
+
+### Example 4: Fine-tune, List-wise, Semantic-ID-based
+
+```shell
+python embedder.py --data mind --model llama1  # extract item embeddings 
+python code_generator.py --data mind --model llama1  # use RQ-VAE for discrete tokenization
+python seq_tuner.py --model llama1seq --data mind --code_path ./code/mind.llama1.seq.code
 ```
 
 More documentations will be available soon.
