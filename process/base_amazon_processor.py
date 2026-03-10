@@ -17,6 +17,7 @@ class AmazonProcessor(UICTProcessor):
     RAT_COL = 'overall'
 
     POS_COUNT = 2
+    MAX_LINES = 1e7
 
     REQUIRE_STRINGIFY = False
 
@@ -39,7 +40,7 @@ class AmazonProcessor(UICTProcessor):
         data = {}
         for index, d in enumerate(cls.parse(path)):
             data[index] = d
-            if index >= 1e7:
+            if cls.MAX_LINES and index >= cls.MAX_LINES:
                 break
         return pd.DataFrame.from_dict(data, orient='index')
 

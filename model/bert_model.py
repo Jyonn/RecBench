@@ -17,7 +17,10 @@ class BertModel(BaseModel, abc.ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.model = BertForMaskedLM.from_pretrained(self.key)  # type: BertForMaskedLM
+        self.model = BertForMaskedLM.from_pretrained(
+            self.key,
+            **self.get_config(),
+        )  # type: BertForMaskedLM
         self.tokenizer = BertTokenizer.from_pretrained(self.key)  # type: BertTokenizer
         self.max_len = self.model.config.max_position_embeddings
 

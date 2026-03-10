@@ -62,8 +62,8 @@ class DiscreteCodePreparer(CodePreparer):
     def tokenize_items(self, source='finetune', item_attrs=None):
         return self.code_indices
 
-    def load_datalist(self):
-        return self._process()
+    def load_datalist(self, source='finetune'):
+        return self._process(source=source)
 
     def load_or_generate(self, mode='train'):
         if mode == 'test':

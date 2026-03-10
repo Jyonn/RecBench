@@ -3,6 +3,7 @@ import abc
 from pigmento import pnt
 from transformers import OPTForCausalLM, AutoTokenizer
 
+from utils.auth import HF_KEY
 from utils.prompt import CHAT_SYSTEM, SIMPLE_SUFFIX
 from model.base_model import BaseModel
 
@@ -16,7 +17,12 @@ class OPTModel(BaseModel, abc.ABC):
         super().__init__(**kwargs)
 
         # use large size opt model
-        self.model = OPTForCausalLM.from_pretrained(self.key, torch_dtype=self.get_dtype())  # type: OPTForCausalLM
+        self.model = OPTForCausalLM.from_pretrained(
+            self.key,
+            **self.get_config(),
+            trust_remote_code=True,
+            token=HF_KEY
+        )  # type: OPTForCausalLM
         self.tokenizer = AutoTokenizer.from_pretrained(self.key)
         self.max_len = self.model.config.max_position_embeddings
         # self.max_len = 1024

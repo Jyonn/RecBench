@@ -1,4 +1,5 @@
 import re
+import warnings
 from typing import Optional
 
 import torch
@@ -18,7 +19,9 @@ class BaseModel:
     BIT: int
     PEFT_TARGET_MODULES = ['q_proj', 'v_proj', 'query', 'value']
 
-    def __init__(self, device):
+    def __init__(self, device, bit: int = None):
+        self.bit = bit or self.BIT
+
         self.device = device
         self.device_ids = None
         if isinstance(device, tuple):
@@ -45,22 +48,34 @@ class BaseModel:
 
         # self.linear = None
 
+    def get_config(self):
+        config = dict(
+            torch_dtype=self.get_dtype(),
+            device_map=self.device
+        )
+        if self.bit == 8:
+            config['load_in_8bit'] = True
+        if self.bit == 4:
+            config['load_in_4bit'] = True
+
+        return config
+
     @property
     def embedding_dim(self):
         return self.model.config.hidden_size
 
     def get_dtype(self):
-        if self.BIT == 16:
+        if self.bit == 16:
             return torch.bfloat16
-        if self.BIT == 32:
+        if self.bit == 32:
             return torch.float32
-        if self.BIT == 8:
-            return torch.float8
-        raise ValueError(f'unsupported bit: {self.BIT}')
+        # raise ValueError(f'unsupported bit: {self.bit}')
+        warnings.warn(f'unsupported bit: {self.bit}, use `auto` instead')
+        return 'auto'
 
     def post_init(self):
         # self.linear = torch.nn.Linear(self.embedding_dim, self.embedding_dim, bias=False).to(self.device)
-        self.model.to(self.device)
+        # self.model.to(self.device)
         if self.device_ids is not None:
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device_ids)
             self.is_parallel = True

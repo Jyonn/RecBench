@@ -10,6 +10,7 @@ from pigmento import pnt
 
 from loader.class_hub import ClassHub
 from model.base_model import BaseModel
+from process.base_processor import BaseProcessor
 from service.base_service import BaseService
 from service.claude_service import Claude21Service, Claude3Service
 from service.gemini_service import GeminiService
@@ -35,7 +36,7 @@ class Worker:
         self.use_prompt = self.type == 'prompt'
         self.use_embed = self.type == 'embed'
 
-        self.processor = load_processor(self.data)
+        self.processor = load_processor(self.data)  # type: BaseProcessor
         self.processor.load()
         self.caller = self.load_model_or_service()  # type: Union[BaseService, BaseModel]
         self.use_service = isinstance(self.caller, BaseService)
@@ -250,6 +251,23 @@ class Worker:
         source_set = self.processor.get_source_set(self.conf.source)
         labels = source_set[self.processor.LBL_COL].values
         groups = source_set[self.processor.UID_COL].values
+
+        pool = MetricPool.parse(self.conf.metrics.split('+'))
+        results = pool.calculate(scores, labels, groups)
+        for metric, value in results.items():
+            pnt(f'{metric}: {value:.4f}')
+
+        self.exporter.save_metrics(results)
+
+    def evaluate_item(self):
+        scores = self.exporter.read(from_convert=self.use_service)  # type: List[float]
+
+        source_set = self.processor.get_source_set(self.conf.source)
+        labels = source_set[self.processor.LBL_COL].values
+        groups = source_set[self.processor.IID_COL].values
+
+        item_groups = self.processor.group_item_by_frequency(num_groups=self.conf.num_groups)
+        groups = [item_groups.get(g, 0) for g in groups]
 
         pool = MetricPool.parse(self.conf.metrics.split('+'))
         results = pool.calculate(scores, labels, groups)

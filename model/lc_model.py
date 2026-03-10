@@ -16,7 +16,14 @@ class LongContextModel(BaseModel, abc.ABC):
         super().__init__(**kwargs)
 
         # use large size opt model
-        self.model = AutoModelForCausalLM.from_pretrained(self.key, trust_remote_code=True, token=HF_KEY, torch_dtype=self.get_dtype())
+        # self.model = AutoModelForCausalLM.from_pretrained(self.key, trust_remote_code=True, token=HF_KEY, torch_dtype=self.get_dtype())
+        self.model = AutoModelForCausalLM.from_pretrained(
+            self.key,
+            **self.get_config(),
+            trust_remote_code=True,
+            token=HF_KEY
+        )
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.key, trust_remote_code=True, token=HF_KEY)
         self.max_len = 10_000
 
